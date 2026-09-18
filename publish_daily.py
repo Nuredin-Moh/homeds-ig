@@ -11,6 +11,7 @@ IG_ID   = os.environ.get("IG_USER_ID", "")   # instagram business account id
 FB_PAGE = os.environ.get("FB_PAGE_ID", "")   # page facebook id (optionnel)
 LI_TOKEN = os.environ.get("LI_TOKEN", "")    # token OAuth LinkedIn (scope w_organization_social)
 LI_ORG   = os.environ.get("LI_ORG_ID", "")   # id numerique de l'organisation LinkedIn Homeds
+LI_START = os.environ.get("LI_START", "2026-10-30")  # avant cette date les posts LinkedIn sont programmes a la main
 V = "v21.0"
 BASE = f"https://graph.facebook.com/{V}/"
 
@@ -121,7 +122,7 @@ def li_escape(t):
 
 def li_headers():
     return {"Authorization": "Bearer " + LI_TOKEN,
-            "LinkedIn-Version": "202405",
+            "LinkedIn-Version": "202609",
             "X-Restli-Protocol-Version": "2.0.0",
             "Content-Type": "application/json"}
 
@@ -134,12 +135,16 @@ def li_upload_image(url):
     up_url = val["uploadUrl"]; img_urn = val["image"]
     raw = urllib.request.urlopen(url).read()
     put = urllib.request.Request(up_url, data=raw, method="PUT",
-                                 headers={"Authorization": "Bearer " + LI_TOKEN})
+                                 headers={"Authorization": "Bearer " + LI_TOKEN,
+                                          "Content-Type": "application/octet-stream",
+                                          "Content-Length": str(len(raw))})
     urllib.request.urlopen(put)
     return img_urn
 
 if not (LI_TOKEN and LI_ORG):
     print("LI: LI_TOKEN/LI_ORG_ID absents, canal LinkedIn ignore.")
+elif today < LI_START:
+    print(f"LI: avant {LI_START}, les posts sont deja programmes a la main sur la Page, saute.")
 elif state.get("li") == today:
     print("LI: deja publie aujourd'hui, saute.")
 else:
