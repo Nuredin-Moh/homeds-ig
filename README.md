@@ -16,3 +16,15 @@ Publie automatiquement, 1 post/jour, les carrousels du calendrier éditorial Hom
 
 Un canal dont les secrets manquent est simplement ignoré (les autres partent quand même).
 Test manuel : onglet Actions → « Run workflow ».
+
+## LinkedIn (depuis le 18.09.2026)
+
+Publication automatique aussi sur la Page LinkedIn Homeds (`urn:li:organization:118904187`),
+via l'app « Homeds Auto Posting » (Community Management API, Development Tier).
+
+- Secrets GitHub : `LI_TOKEN` (jeton OAuth, **valable 2 mois**) et `LI_ORG_ID`.
+- ⚠️ **Le jeton expire le 16.11.2026** puis tous les ~2 mois. Pour le renouveler, une seule commande :
+  `bash ~/.homeds-linkedin/renouveler.sh` (ouvre LinkedIn, un clic « Autoriser », et le secret GitHub est mis a jour).
+  Sans renouvellement, seul LinkedIn s'arrete : Instagram et Facebook continuent.
+- `LI_START` (defaut `2026-10-30`) : avant cette date les posts LinkedIn sont deja programmes a la main
+  sur la Page, le script les saute pour eviter les doublons.
