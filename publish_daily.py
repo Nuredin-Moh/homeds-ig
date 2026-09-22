@@ -3,7 +3,7 @@
 # Autonome : tourne dans GitHub Actions, independant de tout ordinateur.
 # Idempotent par canal (last.json : {"ig": "YYYY-MM-DD", "fb": ..., "li": ...}) :
 # si un canal a deja publie aujourd'hui il est saute ; les autres peuvent partir/reessayer.
-import json, os, time, urllib.request, urllib.parse, urllib.error
+import json, os, re, time, urllib.request, urllib.parse, urllib.error
 from datetime import datetime, timezone
 
 TOKEN   = os.environ.get("IG_TOKEN", "")     # page access token Meta permanent (sert IG + FB)
@@ -12,6 +12,8 @@ FB_PAGE = os.environ.get("FB_PAGE_ID", "")   # page facebook id (optionnel)
 LI_TOKEN = os.environ.get("LI_TOKEN", "")    # token OAuth LinkedIn (scope w_organization_social)
 LI_ORG   = os.environ.get("LI_ORG_ID", "")   # id numerique de l'organisation LinkedIn Homeds
 LI_START = os.environ.get("LI_START", "2026-10-30")  # avant cette date les posts LinkedIn sont programmes a la main
+# Exceptions : dates avant LI_START publiees quand meme par l'API (ex. post Tribune de Geneve du 24.09.2026).
+LI_AUTO_DATES = set(d for d in os.environ.get("LI_AUTO_DATES", "2026-09-24").split(",") if d)
 V = "v21.0"
 BASE = f"https://graph.facebook.com/{V}/"
 
@@ -116,9 +118,11 @@ else:
 
 # ---------- LINKEDIN ----------
 def li_escape(t):
-    for ch in "\\<>()[]{}":
+    # Format « little text » de l'API Posts : ces caracteres sont reserves et doivent etre echappes.
+    for ch in "\\|{}@[]()<>#*_~":
         t = t.replace(ch, "\\" + ch)
-    return t
+    # Les hashtags redeviennent de vrais hashtags LinkedIn.
+    return re.sub(r"\\#(\w+)", r"{hashtag|\\#|\1}", t)
 
 def li_headers():
     return {"Authorization": "Bearer " + LI_TOKEN,
@@ -143,7 +147,7 @@ def li_upload_image(url):
 
 if not (LI_TOKEN and LI_ORG):
     print("LI: LI_TOKEN/LI_ORG_ID absents, canal LinkedIn ignore.")
-elif today < LI_START:
+elif today < LI_START and today not in LI_AUTO_DATES:
     print(f"LI: avant {LI_START}, les posts sont deja programmes a la main sur la Page, saute.")
 elif state.get("li") == today:
     print("LI: deja publie aujourd'hui, saute.")
