@@ -13,7 +13,7 @@ LI_TOKEN = os.environ.get("LI_TOKEN", "")    # token OAuth LinkedIn (scope w_org
 LI_ORG   = os.environ.get("LI_ORG_ID", "")   # id numerique de l'organisation LinkedIn Homeds
 LI_START = os.environ.get("LI_START", "2026-10-30")  # avant cette date les posts LinkedIn sont programmes a la main
 # Exceptions : dates avant LI_START publiees quand meme par l'API (ex. post Tribune de Geneve du 24.09.2026).
-LI_AUTO_DATES = set(d for d in os.environ.get("LI_AUTO_DATES", "2026-09-24").split(",") if d)
+LI_AUTO_DATES = set(d for d in os.environ.get("LI_AUTO_DATES", "2026-09-24,2026-10-09,2026-10-15,2026-10-20,2026-10-27,2026-10-29").split(",") if d)
 V = "v21.0"
 BASE = f"https://graph.facebook.com/{V}/"
 
