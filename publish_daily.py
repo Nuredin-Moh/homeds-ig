@@ -46,8 +46,19 @@ if os.path.exists("last.json"):
 if "ig" not in state and "last" in state:
     state = {"ig": state.get("last")}
 
-posts = json.load(open("schedule.json", encoding="utf-8"))
-todays = [p for p in posts if p["date"] == today]
+# Calendrier termine (plus aucune entree a partir d'aujourd'hui) ou absent : sortie propre (code 0),
+# rien n'est publie, last.json n'est pas touche. Pas de nouveau mois sans demande de Nuredin (08.11.2026) :
+# pour reprendre, ajouter les entrees du mois dans schedule.json, le workflow repart tout seul.
+try:
+    posts = json.load(open("schedule.json", encoding="utf-8"))
+except FileNotFoundError:
+    posts = []
+dates = sorted(p["date"] for p in posts if isinstance(p, dict) and p.get("date"))
+if not dates or dates[-1] < today:
+    fin = f"derniere entree le {dates[-1]}" if dates else "schedule.json vide"
+    print(f"Calendrier termine ({fin}) : rien a publier le {today}.")
+    raise SystemExit(0)
+todays = [p for p in posts if isinstance(p, dict) and p.get("date") == today]
 if not todays:
     print("Aucun post prevu pour", today); raise SystemExit(0)
 p = todays[0]; imgs = p["images"]; cap = p["caption"]
